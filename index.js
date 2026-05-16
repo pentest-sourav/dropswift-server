@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
+const fs = require("fs");
 const cloudinary = require("cloudinary").v2;
 
 require("dotenv").config();
@@ -27,11 +28,9 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer Memory Storage
-const storage = multer.memoryStorage();
-
+// Multer Disk Storage
 const upload = multer({
-  storage,
+  dest: "uploads/",
 });
 
 // Upload Route
@@ -47,44 +46,27 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     }
 
-    // Detect PDF
-    const isPdf =
-      req.file.mimetype === "application/pdf";
-
-    const stream = cloudinary.uploader.upload_stream(
+    const result = await cloudinary.uploader.upload(
+      req.file.path,
       {
-        resource_type: isPdf ? "raw" : "image",
+        resource_type: "auto",
         folder: "dropswift",
-        use_filename: true,
-      },
-
-      (error, uploadedFile) => {
-
-        if (error) {
-
-          console.log(error);
-
-          return res.status(500).json({
-            message: "Upload failed",
-          });
-
-        }
-
-        return res.json({
-          fileUrl: uploadedFile.secure_url,
-        });
-
       }
     );
 
-    stream.end(req.file.buffer);
+    // delete temp file
+    fs.unlinkSync(req.file.path);
+
+    return res.json({
+      fileUrl: result.secure_url,
+    });
 
   } catch (error) {
 
     console.log(error);
 
     return res.status(500).json({
-      message: "Server Error",
+      message: "Upload failed",
     });
 
   }
