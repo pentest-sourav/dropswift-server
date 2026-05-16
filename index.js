@@ -47,9 +47,13 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     }
 
+    // Detect PDF
+    const isPdf =
+      req.file.mimetype === "application/pdf";
+
     const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: "auto",
+        resource_type: isPdf ? "raw" : "image",
         folder: "dropswift",
         use_filename: true,
       },
