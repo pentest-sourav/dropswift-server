@@ -36,7 +36,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer
+// Multer Storage
 const upload = multer({
   dest: "uploads/",
 });
@@ -54,7 +54,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     }
 
-    // PDF or Image detection
+    // PDF detect
     const isPdf =
       req.file.mimetype === "application/pdf";
 
@@ -62,11 +62,17 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     const result = await cloudinary.uploader.upload(
       req.file.path,
       {
-        resource_type: isPdf
-          ? "raw"
-          : "image",
+        resource_type:
+          isPdf ? "raw" : "image",
 
         folder: "dropswift",
+
+        use_filename: true,
+
+        unique_filename: true,
+
+        filename_override:
+          req.file.originalname,
       }
     );
 
@@ -119,18 +125,23 @@ app.get("/file/:id", async (req, res) => {
 
     }
 
-    if (file.fileUrl.includes("/raw/upload/")) {
+    // Fix PDF downloads
+    if (
+      file.fileUrl.includes("/raw/upload/")
+    ) {
 
-  const downloadUrl = file.fileUrl.replace(
-    "/raw/upload/",
-    "/raw/upload/fl_attachment/"
-  );
+      const fixedUrl =
+        file.fileUrl.replace(
+          "/raw/upload/",
+          "/raw/upload/fl_attachment/"
+        );
 
-  return res.redirect(downloadUrl);
+      return res.redirect(fixedUrl);
 
-}
+    }
 
-return res.redirect(file.fileUrl);
+    // Images
+    return res.redirect(file.fileUrl);
 
   } catch (error) {
 
@@ -144,8 +155,11 @@ return res.redirect(file.fileUrl);
 
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT =
+  process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT} 🚀`);
+  console.log(
+    `Server running on ${PORT} 🚀`
+  );
 });
