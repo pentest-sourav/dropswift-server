@@ -200,7 +200,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     // Return short link
     return res.json({
-      shortLink: `https://dropswift-seven.vercel.app/f/${shortId}`,
+      shortLink: `https://dropswift-seven.vercel.app/file/${shortId}`,
     });
 
   } catch (error) {
