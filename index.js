@@ -119,7 +119,18 @@ app.get("/file/:id", async (req, res) => {
 
     }
 
-    return res.redirect(file.fileUrl);
+    if (file.fileUrl.includes("/raw/upload/")) {
+
+  const downloadUrl = file.fileUrl.replace(
+    "/raw/upload/",
+    "/raw/upload/fl_attachment/"
+  );
+
+  return res.redirect(downloadUrl);
+
+}
+
+return res.redirect(file.fileUrl);
 
   } catch (error) {
 
