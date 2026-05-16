@@ -126,19 +126,7 @@ app.get("/file/:id", async (req, res) => {
     }
 
     // Fix PDF downloads
-    if (
-      file.fileUrl.includes("/raw/upload/")
-    ) {
-
-      const fixedUrl =
-        file.fileUrl.replace(
-          "/raw/upload/",
-          "/raw/upload/fl_attachment/"
-        );
-
-      return res.redirect(fixedUrl);
-
-    }
+   return res.redirect(file.fileUrl);
 
     // Images
     return res.redirect(file.fileUrl);
