@@ -43,6 +43,9 @@ app.post("/upload", upload.single("file"), async (req, res) => {
             ? "raw"
             : "image",
         folder: "dropswift",
+        
+        use_filename: true,
+        unique_filename: false,
       }
     );
 
