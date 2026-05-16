@@ -43,9 +43,11 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     }
 
     // Original filename
-    const originalName = path.parse(
-      req.file.originalname
-    ).name;
+    const originalName = path
+      .parse(req.file.originalname)
+      .name
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9-_]/g, "");
 
     // Extension
     const extension = path.extname(
