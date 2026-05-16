@@ -8,53 +8,44 @@ require("dotenv").config();
 
 const app = express();
 
-// CORS
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST"],
-}));
-
+app.use(cors());
 app.use(express.json());
 
-// Health Route
 app.get("/", (req, res) => {
-  res.send("DropSwift Backend Running 🚀");
+  res.send("Backend Running 🚀");
 });
 
-// Cloudinary Config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Multer Disk Storage
 const upload = multer({
   dest: "uploads/",
 });
 
-// Upload Route
 app.post("/upload", upload.single("file"), async (req, res) => {
 
   try {
 
     if (!req.file) {
-
       return res.status(400).json({
         message: "No file uploaded",
       });
-
     }
 
     const result = await cloudinary.uploader.upload(
       req.file.path,
       {
-        resource_type: "auto",
+        resource_type:
+          req.file.mimetype === "application/pdf"
+            ? "raw"
+            : "image",
         folder: "dropswift",
       }
     );
 
-    // delete temp file
     fs.unlinkSync(req.file.path);
 
     return res.json({
@@ -73,10 +64,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
 });
 
-// PORT
 const PORT = process.env.PORT || 5000;
 
-// Start Server
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT} 🚀`);
+  console.log(`Server running on ${PORT}`);
 });
