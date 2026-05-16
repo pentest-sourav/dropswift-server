@@ -7,6 +7,7 @@ require("dotenv").config();
 
 const app = express();
 
+// CORS
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST"],
@@ -14,6 +15,7 @@ app.use(cors({
 
 app.use(express.json());
 
+// Health Route
 app.get("/", (req, res) => {
   res.send("DropSwift Backend Running 🚀");
 });
@@ -45,13 +47,11 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     }
 
-    const isPdf =
-      req.file.mimetype === "application/pdf";
-
     const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: isPdf ? "raw" : "image",
+        resource_type: "auto",
         folder: "dropswift",
+        use_filename: true,
       },
 
       (error, uploadedFile) => {
@@ -66,20 +66,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
         }
 
-        let finalUrl = uploadedFile.secure_url;
-
-        // FIX PDF URL
-        if (isPdf) {
-
-          finalUrl = finalUrl.replace(
-            "/raw/upload/",
-            "/raw/upload/fl_attachment/"
-          );
-
-        }
-
         return res.json({
-          fileUrl: finalUrl,
+          fileUrl: uploadedFile.secure_url,
         });
 
       }
@@ -99,8 +87,10 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
 });
 
+// PORT
 const PORT = process.env.PORT || 5000;
 
+// Start Server
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT} 🚀`);
 });
