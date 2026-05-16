@@ -7,8 +7,18 @@ require("dotenv").config();
 
 const app = express();
 
-app.use(cors());
+// CORS
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST"],
+}));
+
 app.use(express.json());
+
+// Health Route
+app.get("/", (req, res) => {
+  res.send("DropSwift Backend Running 🚀");
+});
 
 // Cloudinary Config
 cloudinary.config({
@@ -29,11 +39,20 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
   try {
 
-    const result = await cloudinary.uploader.upload_stream(
+    if (!req.file) {
+
+      return res.status(400).json({
+        message: "No file uploaded",
+      });
+
+    }
+
+    const stream = cloudinary.uploader.upload_stream(
       {
         resource_type: "auto",
         folder: "dropswift",
       },
+
       (error, uploadedFile) => {
 
         if (error) {
@@ -48,18 +67,19 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
         return res.json({
           fileUrl: uploadedFile.secure_url,
+          shortLink: uploadedFile.secure_url,
         });
 
       }
     );
 
-    result.end(req.file.buffer);
+    stream.end(req.file.buffer);
 
   } catch (error) {
 
     console.log(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server Error",
     });
 
@@ -67,7 +87,10 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
 });
 
+// PORT
+const PORT = process.env.PORT || 5000;
+
 // Start Server
-app.listen(5000, () => {
-  console.log("Server running 🚀");
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT} 🚀`);
 });
